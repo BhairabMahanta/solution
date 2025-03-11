@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widgets/weather_card.dart';
-import '../providers/weather_provider.dart';
-import '../utils/dialog_utils.dart';
-import '../features/feature_button.dart';
-import '../features/features.dart';
 import 'package:provider/provider.dart';
+import '../providers/weather_provider.dart';
 import '../widgets/chatbot_overlay.dart';
+import '../widgets/weather_info_section.dart';
+import '../features/feature_grid.dart';
+import '../widgets/auth_buttons.dart';
+import '../widgets/coming_soon_section.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -20,12 +20,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     Future.microtask(() {
       Provider.of<WeatherProvider>(context, listen: false).fetchWeather();
+      print("Fetching weather data...");
     });
   }
 
   void toggleChat() {
     setState(() {
       showChat = !showChat;
+      print("Chat toggled: $showChat");
     });
   }
 
@@ -45,82 +47,45 @@ class _HomeScreenState extends State<HomeScreen> {
         Scaffold(
           appBar: AppBar(
             backgroundColor: const Color.fromARGB(255, 158, 223, 166),
-            title: const SelectableText('GreenStride'),
-            actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () => showAuthDialog(context, "Login"),
-                    child: const SelectableText("Login",
-                        style: TextStyle(color: Colors.black)),
-                  ),
-                  const SizedBox(width: 10),
-                  TextButton(
-                    onPressed: () => showAuthDialog(context, "Signup"),
-                    child: const SelectableText("Signup",
-                        style: TextStyle(color: Colors.black)),
-                  ),
-                ],
-              ),
-            ],
+            title: const Text(
+              'GreenStride',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            actions: [AuthButtons()],
           ),
           body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.blue.shade100, Colors.green.shade200],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+            color: Color(0xFFE5F5EC), // Replaced gradient with solid color
             padding: const EdgeInsets.all(25.0),
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SelectableText(
-                      "Planting Green, Growing Life",
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    const SizedBox(height: 8),
-                    const SelectableText(
-                      "Your investment is susceptible to greater vulnerability from external influences.",
-                      style: TextStyle(fontSize: 14),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    if (weather != null) WeatherCard(weather: weather),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.6,
-                      child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount:
-                              MediaQuery.of(context).size.width > 650 ? 5 : 3,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio:
-                              MediaQuery.of(context).size.width > 650
-                                  ? 1.5
-                                  : 1.2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize:
+                          MainAxisSize.min, // Prevents extra white space
+                      children: [
+                        Center(
+                          child: Text(
+                            "Your guide to sustainable living and climate action",
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey.shade700),
+                          ),
                         ),
-                        itemCount: featureList.length,
-                        itemBuilder: (context, index) {
-                          return FeatureButton(
-                            icon: featureList[index][1] as IconData,
-                            label: featureList[index][0] as String,
-                            screen: featureList[index][2] as Widget,
-                            navigateTo: navigateTo,
-                          );
-                        },
-                      ),
+                        const SizedBox(height: 20),
+                        WeatherInfoSection(weather: weather),
+                        const SizedBox(height: 20),
+                        FeatureGrid(navigateTo: navigateTo),
+                        const SizedBox(height: 20),
+                        ComingSoonSection(),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           ),
           floatingActionButton: FloatingActionButton(
@@ -128,7 +93,13 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Icon(Icons.chat),
           ),
         ),
-        if (showChat) ChatbotOverlay(onClose: toggleChat),
+        if (showChat)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ChatbotOverlay(onClose: toggleChat),
+          ),
       ],
     );
   }

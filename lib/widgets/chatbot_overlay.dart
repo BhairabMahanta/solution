@@ -34,14 +34,10 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
+    return SafeArea(
       child: Material(
-        // Add Material here
         child: Container(
-          height: MediaQuery.of(context).size.height * 0.5,
+          height: MediaQuery.of(context).size.height * 0.4, // Reduced height
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -61,25 +57,30 @@ class _ChatbotOverlayState extends State<ChatbotOverlay> {
                 ],
               ),
               Expanded(
-                child: ListView(
-                  children: messages.map((msg) {
-                    bool isUser = msg.containsKey("user");
-                    return Align(
-                      alignment:
-                          isUser ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin:
-                            EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isUser ? Colors.blue[100] : Colors.green[100],
-                          borderRadius: BorderRadius.circular(10),
+                child: SingleChildScrollView(
+                  // Prevents keyboard overflow
+                  child: Column(
+                    children: messages.map((msg) {
+                      bool isUser = msg.containsKey("user");
+                      return Align(
+                        alignment: isUser
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
+                        child: Container(
+                          margin:
+                              EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color:
+                                isUser ? Colors.blue[100] : Colors.green[100],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SelectableText(
+                              isUser ? msg["user"]! : msg["bot"]!),
                         ),
-                        child:
-                            SelectableText(isUser ? msg["user"]! : msg["bot"]!),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               if (isLoading) CircularProgressIndicator(),
